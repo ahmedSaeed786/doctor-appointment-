@@ -6,6 +6,7 @@ use App\Http\Controllers\RegisterController;
 use App\Http\Controllers\SlotitemController;
 use App\Http\Controllers\ScanController;
 use App\Http\Controllers\AppointmentController;
+use App\Models\appointment;
 
 Route::get('/user', function (Request $request) {
     return $request->user();
@@ -44,6 +45,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('add', [SlotitemController::class, 'store']);
         Route::post('update', [SlotitemController::class, 'update']);
         Route::post('delete', [SlotitemController::class, 'destroy']);
+        Route::post('select', [AppointmentController::class, 'slot']);
     });
     Route::prefix('appointment')->group(function () {
 

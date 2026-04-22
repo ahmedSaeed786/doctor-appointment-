@@ -9,6 +9,7 @@ use Illuminate\Http\Request;
 use App\Http\Controllers\BaseController;
 use Illuminate\Http\JsonResponse;
 use Nette\Utils\Json;
+use App\Models\slotitem;
 
 class AppointmentController extends BaseController
 {
@@ -76,6 +77,55 @@ class AppointmentController extends BaseController
     /**
      * Update the specified resource in storage.
      */
+
+
+    public function slot(Request $request)
+    {
+
+
+
+        $book = 0;
+        $query = appointment::where('appointment_date',  $request->date)->with('appointmentSlot')->get();
+        $count = appointment::where('appointment_date', $request->date)->count();
+
+
+        $status = 0;
+
+        $slot = slotitem::get();
+
+        foreach ($slot as $sl) {
+            $a = $sl->id;
+            for ($i = 0; $i <= $count; $i++) {
+                return $query[$i];
+                foreach ($query[$i]['appointmentSlot'] ?? []  as $q) {
+                    return $q;
+
+                    if ($q['slot_id'] == $sl->id) {
+                        $status = 1;
+                    }
+                }
+            }
+
+            $set[] = [
+                "id" => $sl->id,
+                "id" => $sl->id,
+                "price" => $sl->slot->price,
+                "time" => $sl->slot->time,
+                "status" => $status,
+
+
+
+            ];
+
+            $status = 0;
+            $a = 0;
+        }
+
+        return $set;
+
+
+        //
+    }
     public function update(Request $request)
     {
         $check = appointment::where('id', $request->id)->first();
