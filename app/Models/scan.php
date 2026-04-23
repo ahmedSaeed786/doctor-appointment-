@@ -11,5 +11,6 @@ class scan extends Model
     public $fillable = [
         "name",
         "price",
+        "scan_category_id",
     ];
 }

@@ -6,6 +6,7 @@ use App\Http\Controllers\RegisterController;
 use App\Http\Controllers\SlotitemController;
 use App\Http\Controllers\ScanController;
 use App\Http\Controllers\AppointmentController;
+use App\Http\Controllers\ParentScanController;
 use App\Models\appointment;
 
 Route::get('/user', function (Request $request) {
@@ -32,6 +33,14 @@ Route::middleware('auth:sanctum')->group(function () {
 
 
 
+    Route::prefix('scan_category')->group(function () {
+
+        Route::post('list', [ParentScanController::class, 'list']);
+        Route::post('add', [ParentScanController::class, 'store']);
+        Route::post('update', [ParentScanController::class, 'update']);
+        Route::post('delete', [ParentScanController::class, 'destroy']);
+    });
+
     Route::prefix('scan')->group(function () {
 
         Route::post('list', [ScanController::class, 'list']);
@@ -39,6 +48,12 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('update', [ScanController::class, 'update']);
         Route::post('delete', [ScanController::class, 'destroy']);
     });
+
+
+
+
+
+
     Route::prefix('slot')->group(function () {
 
         Route::post('list', [SlotitemController::class, 'list']);

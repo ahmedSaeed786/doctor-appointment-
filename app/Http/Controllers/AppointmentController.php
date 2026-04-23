@@ -10,6 +10,10 @@ use App\Http\Controllers\BaseController;
 use Illuminate\Http\JsonResponse;
 use Nette\Utils\Json;
 use App\Models\slotitem;
+use App\Models\parentScan;
+use Ramsey\Collection\Set;
+
+use function PHPUnit\Framework\isNull;
 
 class AppointmentController extends BaseController
 {
@@ -61,8 +65,10 @@ class AppointmentController extends BaseController
     /**
      * Display the specified resource.
      */
-    public function show(appointment $appointment)
+    public function find(Request $request)
     {
+
+
         //
     }
 
@@ -84,48 +90,56 @@ class AppointmentController extends BaseController
 
 
 
-        $book = 0;
-        $query = appointment::where('appointment_date',  $request->date)->with('appointmentSlot')->get();
-        $count = appointment::where('appointment_date', $request->date)->count();
 
 
-        $status = 0;
 
-        $slot = slotitem::get();
+        $query = appointment::where('appointment_date',  $request->date)->with('appointmentSlot', 'appointmentScan')->get();
 
-        foreach ($slot as $sl) {
-            $a = $sl->id;
-            for ($i = 0; $i <= $count; $i++) {
-                return $query[$i];
-                foreach ($query[$i]['appointmentSlot'] ?? []  as $q) {
-                    return $q;
 
-                    if ($q['slot_id'] == $sl->id) {
-                        $status = 1;
-                    }
-                }
+        $SlotDetail = collect($query)->keyBy('appointmentSlot.slot_id');
+
+
+        $slots = slotitem::get();
+        $set = [];
+        foreach ($slots as $slot) {
+
+
+
+
+
+            if ($SlotDetail->has($slot->id)) {
+
+                $set[] = [
+
+                    'slot_id' => $slot->id,
+                    'time' => $slot->time,
+                    'price' => $slot->price,
+                    'status' => 'booked',
+                ];
+            } else {
+
+                $set[] = [
+
+                    'slot_id' => $slot->id,
+                    'time' => $slot->time,
+                    'price' => $slot->price,
+                    'status' => 'un booked',
+                ];
             }
-
-            $set[] = [
-                "id" => $sl->id,
-                "id" => $sl->id,
-                "price" => $sl->slot->price,
-                "time" => $sl->slot->time,
-                "status" => $status,
-
-
-
-            ];
-
-            $status = 0;
-            $a = 0;
         }
 
-        return $set;
+        return response()->json([
+            "status" => true,
+            "detail" => $set,
+        ]);
+
+
 
 
         //
     }
+
+
     public function update(Request $request)
     {
         $check = appointment::where('id', $request->id)->first();

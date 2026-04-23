@@ -7,6 +7,7 @@ use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use App\Models\scan;
 use App\Models\slotitem;
+use App\Models\parentScan;
 use Illuminate\Support\Facades\Hash;
 
 class DatabaseSeeder extends Seeder
@@ -20,17 +21,17 @@ class DatabaseSeeder extends Seeder
     {
         // User::factory(10)->create();
 
-
+        parentScan::create(['name' => 'X-Ray (Radiography)']);
         $data = [
-            ["name" => "Urniary Tract Scan", "price" => "150"],
-            ["name" => "Appendix & Bowel Scan", "price" => "175"],
-            ["name" => "Testicular Scan", "price" => "150"],
-            ["name" => "Fertility & IVF Scan", "price" => "150"],
-            ["name" => "PMB Ultrasound", "price" => "150"],
-            ["name" => "Upper Abdomen Scan", "price" => "150"],
-            ["name" => "Abdomen & Pelvic Scan", "price" => "220"],
-            ["name" => "Hernia Scan", "price" => "150"],
-            ["name" => "Pelvic Ultrasound Scan", "price" => "175"],
+            ["name" => "Urniary Tract Scan", "price" => "150", 'scan_category_id' => 1,],
+            ["name" => "Appendix & Bowel Scan", "price" => "175", 'scan_category_id' => 1,],
+            ["name" => "Testicular Scan", "price" => "150", 'scan_category_id' => 1,],
+            ["name" => "Fertility & IVF Scan", "price" => "150", 'scan_category_id' => 1,],
+            ["name" => "PMB Ultrasound", "price" => "150", 'scan_category_id' => 1,],
+            ["name" => "Upper Abdomen Scan", "price" => "150", 'scan_category_id' => 1,],
+            ["name" => "Abdomen & Pelvic Scan", "price" => "220", 'scan_category_id' => 1,],
+            ["name" => "Hernia Scan", "price" => "150", 'scan_category_id' => 1,],
+            ["name" => "Pelvic Ultrasound Scan", "price" => "175", 'scan_category_id' => 1,],
         ];
 
 
@@ -38,6 +39,7 @@ class DatabaseSeeder extends Seeder
             scan::create([
                 'name' => $item['name'],
                 'price' => $item['price'],
+                'scan_category_id' => $item['scan_category_id'],
             ]);
         }
 

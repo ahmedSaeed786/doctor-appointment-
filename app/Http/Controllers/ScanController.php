@@ -40,6 +40,7 @@ class ScanController extends BaseController
         $validation = Validator::make($request->all(), [
 
             'price' => 'Required',
+            'scan_category_id' => 'Required',
             'name' =>  'required|unique:scans,name',
 
         ]);
@@ -79,6 +80,7 @@ class ScanController extends BaseController
 
             'id' => 'Required',
             'price' => 'Required',
+            'scan_category_id' => 'Required',
             'name' =>  'required',
 
         ]);
