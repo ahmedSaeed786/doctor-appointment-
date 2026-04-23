@@ -32,6 +32,7 @@ return new class extends Migration
 
             $table->string('representative_last_name')->nullable();
             $table->decimal('total');
+            $table->integer('user_id');
             $table->string('promo_code')->nullable();
             $table->timestamps();
         });

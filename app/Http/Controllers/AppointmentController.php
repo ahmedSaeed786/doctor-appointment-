@@ -12,7 +12,8 @@ use Nette\Utils\Json;
 use App\Models\slotitem;
 use App\Models\parentScan;
 use Ramsey\Collection\Set;
-
+use Validator;
+use Illuminate\Support\Facades\Auth;
 use function PHPUnit\Framework\isNull;
 
 class AppointmentController extends Controller
@@ -22,13 +23,29 @@ class AppointmentController extends Controller
      */
     public function index()
     {
-        $appointments  = appointment::with('appointmentSlot', 'appointmentScan')->get();
-        return response()->json([
-            "status" => 'success',
-            "detail" => $appointments,
-        ]);
 
-        return $this->sendResponse($appointments, 'Fetching Data SuccessFully!.');
+        $user = appointment::where('id', Auth()->user()->id)->first();
+
+        if (Auth()->user()->role == 'Admin') {
+
+            $appointments  = appointment::with('appointmentSlot', 'appointmentScan')->get();
+            return response()->json([
+                "status" => 'success',
+                "detail" => $appointments,
+            ]);
+
+            return $this->sendResponse($appointments, 'Fetching Data SuccessFully!.');
+        } else {
+
+            $appointments  = appointment::where('user_id',  Auth()->user()->id)->with('appointmentSlot', 'appointmentScan')->get();
+            return response()->json([
+
+                "status" => 'success',
+                "detail" => $appointments,
+            ]);
+
+            return $this->sendResponse($appointments, 'Fetching Data SuccessFully!.');
+        }
 
 
         //
@@ -47,6 +64,38 @@ class AppointmentController extends Controller
      */
     public function store(Request $request)
     {
+
+
+
+        $validation = Validator::make($request->all(), [
+            "first_name" => 'Required',
+            "last_name" => 'Required',
+            "email" => 'Required',
+            "phone" => 'Required',
+            "address" => 'Required',
+            "second_address" => 'Required',
+            "emergency_contact" => 'Required',
+            "dob" => 'Required',
+            "gender" => 'Required',
+            "disability" => 'Required',
+
+            "clinical_indication" => 'Required',
+            "capability" => 'Required',
+            "representative" => 'Required',
+            "appointment_date" => 'Required',
+            "Representative_first_name" => 'Required',
+            "Representative_last_name" => 'Required',
+            "total" => 'Required',
+            "user_id" => 'Required',
+
+        ]);
+
+        if ($validation->fails()) {
+            return response()->json([
+                "status" => 'error',
+                "error" => $validation->errors(),
+            ]);
+        }
         $input =  $request->all();
 
         $appointment = appointment::create($input);

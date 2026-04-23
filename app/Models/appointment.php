@@ -29,12 +29,14 @@ class appointment extends Model
         "Representative_first_name",
         "Representative_last_name",
         "total",
+        "user_id",
         "promo_code",
     ];
     public function appointmentSlot()
     {
         return $this->hasOne(bookSlot::class, 'appointment_id', 'id')->with('slot');
     }
+
     public function appointmentScan()
     {
         return $this->hasOne(bookScan::class, 'appointment_id', 'id')->with('scan');

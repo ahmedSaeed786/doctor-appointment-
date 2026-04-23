@@ -21,6 +21,7 @@ class RegisterController extends Controller
         $validation = Validator::make($request->all(), [
 
             'name' => 'Required',
+            'role' => ['required', 'in:Admin,User'],
             'email' =>  'required|email|unique:users,email',
             'password' => 'Required',
         ]);
@@ -69,6 +70,7 @@ class RegisterController extends Controller
     public function updatePassword(Request $request)
     {
         $validation = Validator::make($request->all(), [
+
 
             'otp' => 'Required',
             'email' =>  'required',
