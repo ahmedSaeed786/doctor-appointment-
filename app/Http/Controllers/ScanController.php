@@ -10,18 +10,20 @@ use Illuminate\Http\Resources\Json\JsonResource;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Validator;
 
-class ScanController extends BaseController
+class ScanController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
-    public function list(): JsonResponse
+    public function list()
     {
 
         $slots = scan::get();
-        //
-        $success['detail'] = $slots;
-        return $this->sendResponse($success, 'Fetching Data Successfully!.');
+
+        return response()->json([
+            "status" => 'success',
+            "detail" =>  $slots,
+        ]);
     }
 
     /**
@@ -45,13 +47,19 @@ class ScanController extends BaseController
 
         ]);
         if ($validation->fails()) {
-            return $this->sendError('validator Error', $validation->errors());
+            return response()->json([
+                "status" => 'error',
+                "detail" =>  $validation->errors(),
+            ]);
         } else {
 
             $input = $request->all();
             $scan = scan::create($input);
-            $success['detail'] = $scan;
-            return $this->sendResponse($success, 'Scan Added Successfully!.');
+
+            return response()->json([
+                "status" => 'success',
+                "detail" =>  $scan,
+            ]);
         }
     }
 
@@ -85,21 +93,27 @@ class ScanController extends BaseController
 
         ]);
         if ($validation->fails()) {
-            return $this->sendError('validator Error', $validation->errors());
+            return response()->json([
+                "status" => 'error',
+                "detail" =>  $validation->errors(),
+            ]);
         } else {
 
             $input = $request->all();
             scan::where('id', $request->id)->update($input);
             $scan = scan::where('id', $request->id)->first();
-            $success['detail'] = $scan;
-            return $this->sendResponse($success, 'Scan Updated Successfully!.');
+
+            return response()->json([
+                "status" => 'success',
+                "detail" =>  $scan,
+            ]);
         }
     }
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Request $request): JsonResponse
+    public function destroy(Request $request)
     {
         $validation = Validator::make($request->all(), [
 
@@ -108,15 +122,24 @@ class ScanController extends BaseController
 
         ]);
         if ($validation->fails()) {
-            return $this->sendError('validator Error', $validation->errors());
+            return response()->json([
+                "status" => 'error',
+                "detail" =>  $validation->errors(),
+            ]);
         } else {
 
             $id = scan::where('id', $request->id)->first();
             if ($id) {
                 scan::where('id', $request->id)->delete();
-                return $this->sendResponse("Delete", 'Scan Deleted Successfully!.');
+                return response()->json([
+                    "status" => 'success',
+                    "detail" =>  'Scan Deleted Successfully!.',
+                ]);
             } else {
-                return $this->sendError('Invalid', "Invalid ID");
+                return response()->json([
+                    "status" => 'error',
+                    "detail" =>  "Invalid ID",
+                ]);
             }
         }
         //

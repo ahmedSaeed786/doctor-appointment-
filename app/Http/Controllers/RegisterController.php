@@ -10,12 +10,13 @@ use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 
 use Mail;
+use Illuminate\Support\Facades\Session;
 
-class RegisterController extends BaseController
+class RegisterController extends Controller
 {
     //
 
-    public function register(Request $request): JsonResponse
+    public function register(Request $request)
     {
         $validation = Validator::make($request->all(), [
 
@@ -24,16 +25,22 @@ class RegisterController extends BaseController
             'password' => 'Required',
         ]);
         if ($validation->fails()) {
-            return $this->sendError('validator Error', $validation->errors());
+
+            return response()->json([
+                "status" => 'error',
+                "detail" => $validation->errors(),
+            ]);
         }
         $input = $request->all();
         $input['password'] = bcrypt($request->password);
-        $input['otp'] = random_int(100000, 999999);
+        $otp = random_int(100000, 999999);
+        $input['otp'] = $otp;
+        Session::put('otp', $otp);
 
         $user = User::create($input);
-        $success['token'] = $user->createToken('auth_token')->plainTextToken;
+        $toke = $user->createToken('auth_token')->plainTextToken;
 
-        $success['detail'] = $user;
+
         $userMail = User::find($user->id);
 
         $booking = [
@@ -51,12 +58,15 @@ class RegisterController extends BaseController
         } catch (\Exception $e) {
             dd($e->getMessage());
         }
-
-
-        return $this->sendResponse($success, 'User Registered Successfully!.');
+        session()->flush();
+        return response()->json([
+            "status" => 'success',
+            "token" =>  $toke,
+            "detail" =>  $user,
+        ]);
     }
 
-    public function updatePassword(Request $request): JsonResponse
+    public function updatePassword(Request $request)
     {
         $validation = Validator::make($request->all(), [
 
@@ -65,7 +75,10 @@ class RegisterController extends BaseController
             'password' => 'Required',
         ]);
         if ($validation->fails()) {
-            return $this->sendError('validator Error', $validation->errors());
+            return response()->json([
+                "status" => 'error',
+                "detail" => $validation->errors(),
+            ]);
         }
         $user = User::where('email', $request->email)->first();
         if ($user) {
@@ -80,15 +93,24 @@ class RegisterController extends BaseController
                     "otp" => null,
                 ]);
                 $users =  User::where('email', $request->email)->first();
-                return $this->sendResponse($users, 'Password Updated Successfully!.');
+                return response()->json([
+                    "status" => 'success',
+                    "detail" =>   'Password Updated Successfully!.',
+                ]);
             } else {
-                return $this->sendError('unauthorized', 'OTP not match.');
+                return response()->json([
+                    "status" => 'success',
+                    "detail" =>  'OTP not match.',
+                ]);
             }
         } else {
-            return $this->sendError('unauthorized', 'Email not found.');
+            return response()->json([
+                "status" => 'success',
+                "detail" =>  'Email not found.',
+            ]);
         }
     }
-    public function forget(Request $request): JsonResponse
+    public function forget(Request $request)
     {
         $validation = Validator::make($request->all(), [
 
@@ -97,14 +119,22 @@ class RegisterController extends BaseController
 
         ]);
         if ($validation->fails()) {
-            return $this->sendError('validator Error', $validation->errors());
+            return response()->json([
+                "status" => 'error',
+                "detail" => $validation->errors(),
+            ]);
+            return response()->json([
+                "status" => 'error',
+                "detail" => $validation->errors(),
+            ]);
         }
         $user = User::where('email', $request->email)->first();
         if ($user) {
-
+            $otp = random_int(100000, 999999);
             User::where('email', $request->email)->update([
-                'otp' => random_int(100000, 999999),
+                'otp' => $otp,
             ]);
+            Session::put('otp', $otp);
             $userMail = User::find($user->id);
 
             $booking = [
@@ -122,14 +152,21 @@ class RegisterController extends BaseController
             } catch (\Exception $e) {
                 dd($e->getMessage());
             }
-            return $this->sendResponse($user, 'Check your email.');
+            Session()->flush();
+            return response()->json([
+                "status" => 'success',
+                "detail" => "Please check your email",
+            ]);
         } else {
-            return $this->sendError('unauthorized', 'Email not found.');
+            return response()->json([
+                "status" => 'error',
+                "detail" => 'Email Not Found',
+            ]);
         }
     }
 
 
-    public function update(Request $request): JsonResponse
+    public function update(Request $request)
     {
 
 
@@ -140,30 +177,41 @@ class RegisterController extends BaseController
             $user = User::where('id', $input['id'])->update($input);
             $user = User::where('id', $input['id'])->first();
             $success['detail'] = $user;
-            return $this->sendResponse($success, 'User Updated Successfully!.');
+            return response()->json([
+                "status" => 'success',
+                "detail" => 'User Updated Successfully!.',
+            ]);
         } else {
             $input = $request->all();
 
             $user = User::where('id', $input['id'])->update($input);
             $user = User::where('id', $input['id'])->first();
             $success['detail'] = $user;
-            return $this->sendResponse($success, 'User Updated Successfully!.');
+            return response()->json([
+                "status" => 'success',
+                "detail" => 'User Updated Successfully!.'
+            ]);
         }
     }
 
-    public function  login(Request $request): JsonResponse
+    public function  login(Request $request)
     {
         if (Auth::attempt(['email' => $request->email, 'password' => $request->password])) {
             $user = Auth::user();
             $success['token'] = $user->createToken('auth_token')->plainTextToken;;
             $success['detail'] = $user;
-            return $this->sendResponse($success, 'User login Successfully!.');
+            return response()->json([
+                "status" => 'success',
+                "detail" =>  $success,
+            ]);
         } else {
-            return $this->sendError('unauthorized', ['error' => 'unauthorized']);
-            // return $this->sendResponse('unauthorized', ['error' => 'unauthorized']);
+            return response()->json([
+                "status" => 'success',
+                "detail" => 'unauthorized',
+            ]);
         }
     }
-    public function  verify(Request $request): JsonResponse
+    public function  verify(Request $request)
     {
         $validation = Validator::make($request->all(), [
 
@@ -172,28 +220,42 @@ class RegisterController extends BaseController
 
         ]);
         if ($validation->fails()) {
-            return $this->sendError('validator Error', $validation->errors());
+            return response()->json([
+                "status" => 'error',
+                "detail" => $validation->errors(),
+            ]);
         }
         $user = User::where('email', $request->email)->first();
         if ($user) {
             if ($user->otp == $request->otp) {
 
 
-                $success['detail'] = $user;
-                return $this->sendResponse($success, 'Verified OTP');
+
+                return response()->json([
+                    "status" => 'success',
+                    "detail" => $user,
+                ]);
             } else {
-                return $this->sendError('Worng', ['error' => 'Worng OTP']);
+                return response()->json([
+                    "status" => 'success',
+                    "detail" => 'Worng OTP',
+                ]);
             }
         } else {
-            return $this->sendError('Worng', ['error' => 'Email not found']);
-            // return $this->sendResponse('Worng', ['error' => 'Email not found']);
+            return response()->json([
+                "status" => 'success',
+                "detail" => 'Email not found',
+            ]);
         }
     }
-    public function  logout(Request $request): JsonResponse
+    public function  logout(Request $request)
     {
         auth()->user()->tokens()->delete();
 
-        return $this->sendResponse('Logout', 'User logout Successfully!.');
+        return response()->json([
+            "status" => 'success',
+            "detail" =>  'User logout Successfully!.',
+        ]);
     }
 
 
@@ -206,29 +268,42 @@ class RegisterController extends BaseController
 
         ]);
         if ($validation->fails()) {
-            return $this->sendError('validator Error', $validation->errors());
+            return response()->json([
+                "status" => 'error',
+                "detail" => $validation->errors(),
+            ]);
         }
         $userFind = User::where('id', $request->id)->first();
         if ($userFind) {
 
             if ($request->id !=  auth()->user()->id) {
                 $user = User::where('id', $request->id)->delete();
-                return $this->sendResponse('Delete', 'User Deleted Successfully!.');
+                return response()->json([
+                    "status" => 'success',
+                    "detail" =>  'User Deleted Successfully!.',
+                ]);
             } else {
                 // $user = User::where('id', $request->id)->delete();
-                return $this->sendError('Delete', 'You do not have permission to delete this ID');
+                return response()->json([
+                    "status" => 'success',
+                    "detail" => 'You do not have permission to delete this ID',
+                ]);
             }
         }
-        return $this->sendError('Delete Error', 'Invalid User ID');
+        return response()->json([
+            "status" => 'success',
+            "detail" => 'Invalid User ID',
+        ]);
     }
-    public function  list(Request $request): JsonResponse
+    public function  list(Request $request)
     {
         $user = user::orderBy('id', 'desc')->paginate(15);
-
-        $success['detail'] = $user;
-        return $this->sendResponse($success, 'Fetching Data Successfully!.');
+        return response()->json([
+            "status" => 'success',
+            "detail" =>  $user,
+        ]);
     }
-    public function  detail(Request $request): JsonResponse
+    public function  detail(Request $request)
     {
         $validation = Validator::make($request->all(), [
 
@@ -237,11 +312,15 @@ class RegisterController extends BaseController
 
         ]);
         if ($validation->fails()) {
-            return $this->sendError('validator Error', $validation->errors());
+            return response()->json([
+                "status" => 'error',
+                "detail" => $validation->errors(),
+            ]);
         }
         $user = user::where('id', $request->id)->first();
-
-        $success['detail'] = $user;
-        return $this->sendResponse($success, 'Fetching Data Successfully!.');
+        return response()->json([
+            "status" => 'success',
+            "detail" =>   $user,
+        ]);
     }
 }

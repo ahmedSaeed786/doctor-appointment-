@@ -11,6 +11,24 @@ class ParentScanController extends Controller
     /**
      * Display a listing of the resource.
      */
+
+
+    public function find(Request $request)
+    {
+        if (isset($request->scan_category_id)) {
+
+            $category = parentScan::where('id', $request->scan_category_id)->with('scan')->first();
+            return response()->json([
+                "status" => "success",
+                "detail" => $category
+            ]);
+        }
+        $category = parentScan::with('scan')->get();
+        return response()->json([
+            "status" => "success",
+            "detail" => $category
+        ]);
+    }
     public function list()
     {
 

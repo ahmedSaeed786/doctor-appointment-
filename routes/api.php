@@ -38,6 +38,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('list', [ParentScanController::class, 'list']);
         Route::post('add', [ParentScanController::class, 'store']);
         Route::post('update', [ParentScanController::class, 'update']);
+        Route::post('find', [ParentScanController::class, 'find']);
         Route::post('delete', [ParentScanController::class, 'destroy']);
     });
 

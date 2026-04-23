@@ -36,7 +36,7 @@
                         <td align="center">
                             <div
                                 style="display:inline-block; padding:15px 25px; font-size:28px; letter-spacing:6px; font-weight:bold; color:#2d89ef; background:#f1f7ff; border-radius:6px;">
-                                {{ $userMail->otp }}
+                                {{ Session::get('otp') }}
                             </div>
                         </td>
                     </tr>

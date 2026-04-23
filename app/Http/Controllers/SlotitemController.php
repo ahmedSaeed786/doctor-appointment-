@@ -9,17 +9,20 @@ use Illuminate\Http\JsonResponse;
 use Nette\Utils\Json;
 use Validator;
 
-class SlotitemController extends BaseController
+class SlotitemController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
-    public function list(): JsonResponse
+    public function list()
     {
 
         $slotitem = slotitem::get();
-        $success['detail'] = $slotitem;
-        return $this->sendResponse($success, 'Fetching Data Successfully!.');
+        return response()->json([
+            "status" => 'success',
+            "detail" =>  $slotitem,
+        ]);
+
 
 
         //
@@ -36,7 +39,7 @@ class SlotitemController extends BaseController
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request): JsonResponse
+    public function store(Request $request)
     {
         $validation = Validator::make($request->all(), [
             'price' => 'required',
@@ -44,11 +47,17 @@ class SlotitemController extends BaseController
 
         ]);
         if ($validation->fails()) {
-            return $this->sendError('validator Error', $validation->errors());
+            return response()->json([
+                "status" => 'error',
+                "detail" =>  $validation->errors(),
+            ]);
         } else {
             $slotitem = slotitem::create($request->all());
 
-            return $this->sendResponse($slotitem, 'Slot Addes Successfully!.');
+            return response()->json([
+                "status" => 'success',
+                "detail" =>  $slotitem,
+            ]);
         }
         //
     }
@@ -80,20 +89,29 @@ class SlotitemController extends BaseController
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Request $request): JsonResponse
+    public function destroy(Request $request)
     {
         $validation = Validator::make($request->all(), [
             'id' => 'Required'
         ]);
         if ($validation->fails()) {
-            return $this->sendError('validator Error', $validation->errors());
+            return response()->json([
+                "status" => 'error',
+                "detail" =>  $validation->errors(),
+            ]);
         } else {
             $id = slotitem::where('id', $request->id)->first();
             if ($id) {
                 slotitem::where('id', $request->id)->delete();
-                return $this->sendResponse("Delete", 'Slot deleted Successfully!.');
+                return response()->json([
+                    "status" => 'success',
+                    "detail" => 'Slot deleted Successfully!.',
+                ]);
             } else {
-                return $this->sendError('Invalid', "Invalid ID");
+                return response()->json([
+                    "status" => 'error',
+                    "detail" =>  "Invalid ID",
+                ]);
             }
         }
 

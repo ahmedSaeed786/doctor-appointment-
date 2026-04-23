@@ -15,14 +15,19 @@ use Ramsey\Collection\Set;
 
 use function PHPUnit\Framework\isNull;
 
-class AppointmentController extends BaseController
+class AppointmentController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
-    public function index(): JsonResponse
+    public function index()
     {
         $appointments  = appointment::with('appointmentSlot', 'appointmentScan')->get();
+        return response()->json([
+            "status" => 'success',
+            "detail" => $appointments,
+        ]);
+
         return $this->sendResponse($appointments, 'Fetching Data SuccessFully!.');
 
 
@@ -40,7 +45,7 @@ class AppointmentController extends BaseController
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request): JsonResponse
+    public function store(Request $request)
     {
         $input =  $request->all();
 
@@ -56,7 +61,10 @@ class AppointmentController extends BaseController
 
         ]);
         $appointment->load('appointmentSlot', 'appointmentScan');
-        return $this->sendResponse($appointment, 'Appointment Booked SuccessFully!.');
+        return response()->json([
+            "status" => 'success',
+            "detail" => $appointment,
+        ]);
 
 
         //
@@ -88,24 +96,12 @@ class AppointmentController extends BaseController
     public function slot(Request $request)
     {
 
-
-
-
-
-
         $query = appointment::where('appointment_date',  $request->date)->with('appointmentSlot', 'appointmentScan')->get();
 
-
         $SlotDetail = collect($query)->keyBy('appointmentSlot.slot_id');
-
-
         $slots = slotitem::get();
         $set = [];
         foreach ($slots as $slot) {
-
-
-
-
 
             if ($SlotDetail->has($slot->id)) {
 
@@ -129,7 +125,7 @@ class AppointmentController extends BaseController
         }
 
         return response()->json([
-            "status" => true,
+            "status" => 'success',
             "detail" => $set,
         ]);
 
@@ -143,7 +139,7 @@ class AppointmentController extends BaseController
     public function update(Request $request)
     {
         $check = appointment::where('id', $request->id)->first();
-        // $update = appointment::where('id', $request->id)->update($request->except(['slot_id', 'scan_id']));
+
         $update = appointment::where('id', $request->id)
             ->update($request->except(['slot_id', 'scan_id']));
         if ($request->scan_id) {
@@ -163,21 +159,34 @@ class AppointmentController extends BaseController
             );
         }
         $appointment = appointment::with('appointmentSlot', 'appointmentScan')->where('id', $request->id)->first();
-        return $appointment;
+        return response()->json([
+            "status" => 'success',
+            "detail" => $appointment,
+        ]);
     }
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Request $request): JsonResponse
+    public function destroy(Request $request)
     {
         $appointment = appointment::where('id', $request->id)->first();
         if ($appointment) {
             appointment::where('id', $request->id)->delete();
             bookSlot::where('appointment_id', $request->id)->delete();
             bookScan::where('appointment_id', $request->id)->delete();
+            return response()->json([
+                "status" => 'success',
+                "detail" => 'Appointment Deleted SuccessFully!.',
+            ]);
+
             return $this->sendResponse("Delete", "Appointment Deleted SuccessFully!.");
         } else {
+            return response()->json([
+                "status" => 'error',
+                "detail" => "This ID not found.",
+            ]);
+
             return $this->sendError("Invalid", "This ID not found.");
         }
         //
