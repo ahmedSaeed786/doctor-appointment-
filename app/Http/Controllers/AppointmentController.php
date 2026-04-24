@@ -153,9 +153,20 @@ class AppointmentController extends Controller
 
         $now = Carbon::now();
 
+        $today = Carbon::today()->format('d-m-Y');
+        $userDate = Carbon::parse($request->start_date);
 
 
         $set = [];
+
+        if ($userDate->isPast()) {
+
+            return response()->json([
+                "status" => 'error',
+                "detail" => "Past date data can't be show",
+            ]);
+        }
+
         foreach ($slots as $slot) {
 
             if ($SlotDetail->has($slot->id)) {
@@ -172,7 +183,33 @@ class AppointmentController extends Controller
                     'status' => 'Reserved',
                 ];
             } else {
-                if ($now->between($slot->start_time, $slot->end_time)) {
+
+                if ($today == $userDate) {
+
+                    if ($now->between($slot->start_time, $slot->end_time)) {
+                        $set[] = [
+
+                            'slot_id' => $slot->id,
+                            'time' => $slot->time,
+                            'price' => $slot->price,
+                            'start time' => $slot->start_time,
+                            'end time' => $slot->end_time,
+                            'status' => 'Available',
+                        ];
+                    } else {
+
+                        $set[] = [
+
+                            'slot_id' => $slot->id,
+                            'time' => $slot->time,
+                            'price' => $slot->price,
+                            'start time' => $slot->start_time,
+                            'end time' => $slot->end_time,
+
+                            'status' => 'Time Out',
+                        ];
+                    }
+                } else {
                     $set[] = [
 
                         'slot_id' => $slot->id,
@@ -181,18 +218,6 @@ class AppointmentController extends Controller
                         'start time' => $slot->start_time,
                         'end time' => $slot->end_time,
                         'status' => 'Available',
-                    ];
-                } else {
-
-                    $set[] = [
-
-                        'slot_id' => $slot->id,
-                        'time' => $slot->time,
-                        'price' => $slot->price,
-                        'start time' => $slot->start_time,
-                        'end time' => $slot->end_time,
-
-                        'status' => 'Time Out',
                     ];
                 }
             }

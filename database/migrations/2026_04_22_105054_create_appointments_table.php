@@ -29,7 +29,6 @@ return new class extends Migration
             $table->string('representative');
             $table->string('appointment_date');
             $table->string('representative_first_name')->nullable();
-
             $table->string('representative_last_name')->nullable();
             $table->decimal('total');
             $table->integer('user_id');
