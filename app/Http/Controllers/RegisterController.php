@@ -32,18 +32,22 @@ class RegisterController extends Controller
                 "detail" => $validation->errors(),
             ]);
         }
-        $input = $request->all();
-        $input['password'] = bcrypt($request->password);
-        $otp = random_int(100000, 999999);
-        $input['otp'] = $otp;
-        Session::put('otp', $otp);
 
-        $user = User::create($input);
+
+        $otp = random_int(100000, 999999);
+        Session::put('otp', $otp);
+        $user = User::create([
+            'name' => $request->name,
+            'password' => bcrypt($request->password),
+            'email' => $request->email,
+            'role' => $request->role,
+            'otp' => $otp,
+        ]);
         $toke = $user->createToken('auth_token')->plainTextToken;
 
 
+        return  $user;
         $userMail = User::find($user->id);
-
         $booking = [
             'title' => 'Mail from MarksMan.com',
             'body' => 'This is for testing email using smtp.',
@@ -121,10 +125,6 @@ class RegisterController extends Controller
 
         ]);
         if ($validation->fails()) {
-            return response()->json([
-                "status" => 'error',
-                "detail" => $validation->errors(),
-            ]);
             return response()->json([
                 "status" => 'error',
                 "detail" => $validation->errors(),

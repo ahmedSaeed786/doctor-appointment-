@@ -15,6 +15,7 @@ use Ramsey\Collection\Set;
 use Validator;
 use Illuminate\Support\Facades\Auth;
 use function PHPUnit\Framework\isNull;
+use Carbon\Carbon;
 
 class AppointmentController extends Controller
 {
@@ -149,27 +150,51 @@ class AppointmentController extends Controller
 
         $SlotDetail = collect($query)->keyBy('appointmentSlot.slot_id');
         $slots = slotitem::get();
+
+        $now = Carbon::now();
+
+
+
         $set = [];
         foreach ($slots as $slot) {
 
             if ($SlotDetail->has($slot->id)) {
 
+
                 $set[] = [
 
                     'slot_id' => $slot->id,
                     'time' => $slot->time,
                     'price' => $slot->price,
-                    'status' => 'booked',
+                    'start time' => $slot->start_time,
+                    'end time' => $slot->end_time,
+
+                    'status' => 'Reserved',
                 ];
             } else {
+                if ($now->between($slot->start_time, $slot->end_time)) {
+                    $set[] = [
 
-                $set[] = [
+                        'slot_id' => $slot->id,
+                        'time' => $slot->time,
+                        'price' => $slot->price,
+                        'start time' => $slot->start_time,
+                        'end time' => $slot->end_time,
+                        'status' => 'Available',
+                    ];
+                } else {
 
-                    'slot_id' => $slot->id,
-                    'time' => $slot->time,
-                    'price' => $slot->price,
-                    'status' => 'un booked',
-                ];
+                    $set[] = [
+
+                        'slot_id' => $slot->id,
+                        'time' => $slot->time,
+                        'price' => $slot->price,
+                        'start time' => $slot->start_time,
+                        'end time' => $slot->end_time,
+
+                        'status' => 'Time Out',
+                    ];
+                }
             }
         }
 

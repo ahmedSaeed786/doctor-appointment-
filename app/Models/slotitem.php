@@ -10,5 +10,7 @@ class slotitem extends Model
     public $fillable = [
         "time",
         "price",
+        "start_time",
+        "end_time",
     ];
 }
